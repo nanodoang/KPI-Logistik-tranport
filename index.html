@@ -291,6 +291,14 @@
         <div class="chart-wrap"><canvas id="chartDotHitMiss"></canvas></div>
       </div>
 
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title">DOT — Rincian Mingguan vs MTD vs YTD</span>
+          <span class="panel-note">% achieve</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartDotRincian"></canvas></div>
+      </div>
+
       <div class="table-panel">
         <div class="panel-head" style="margin-top:4px;">
           <span class="panel-title">Analisa Miss — Kenapa Telat</span>
@@ -340,6 +348,14 @@
         </div>
         <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
       </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title">Cost — Rincian Mingguan vs MTD vs YTD</span>
+          <span class="panel-note">% dari budget</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartCostRincian"></canvas></div>
+      </div>
     </div>
 
     <!-- ===== KPI 3 — PEMENUHAN ARMADA ===== -->
@@ -383,6 +399,14 @@
           <span class="panel-note">%</span>
         </div>
         <div class="chart-wrap"><canvas id="chartPemenuhan"></canvas></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title">Pemenuhan Armada — Rincian Mingguan vs MTD vs YTD</span>
+          <span class="panel-note">% achieve</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartPemenuhanRincian"></canvas></div>
       </div>
 
       <div class="table-panel">
@@ -883,6 +907,119 @@ function renderChartsFromApi(apiData, range){
   });
 }
 
+let chartDotRincian, chartCostRincian, chartPemenuhanRincian;
+
+// Plugin ringan buat nampilin angka/persentase di atas tiap batang (tanpa perlu library tambahan)
+const barValueLabelsPlugin = {
+  id: 'barValueLabels',
+  afterDatasetsDraw(chart){
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, dIdx) => {
+      if (dataset.type === 'line' || dataset.hidden) return; // skip garis target
+      const meta = chart.getDatasetMeta(dIdx);
+      meta.data.forEach((bar, i) => {
+        const raw = dataset.data[i];
+        if (raw === null || raw === undefined) return;
+        const label = dataset.labelFormat ? dataset.labelFormat(raw) : raw;
+        ctx.save();
+        ctx.fillStyle = '#17233D';
+        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, bar.x, bar.y - 8);
+        ctx.restore();
+      });
+    });
+  }
+};
+
+async function renderRincianCharts(){
+  const labels = ['Mingguan', 'MTD', 'YTD'];
+  let dotPct, costPct, pemenuhanPct;
+  let dotTarget = 93, pemenuhanTarget = 95, costTarget = 100;
+
+  if (DASHBOARD_API_URL) {
+    try {
+      const [wk, mtd, ytd] = await Promise.all([
+        fetchRealData('week'), fetchRealData('mtd'), fetchRealData('ytd')
+      ]);
+      if (wk && mtd && ytd) {
+        dotPct = [wk.kpi.dot.pct, mtd.kpi.dot.pct, ytd.kpi.dot.pct];
+        costPct = [wk.kpi.cost.pctOfBudget, mtd.kpi.cost.pctOfBudget, ytd.kpi.cost.pctOfBudget];
+        pemenuhanPct = [wk.kpi.pemenuhanArmada.pct, mtd.kpi.pemenuhanArmada.pct, ytd.kpi.pemenuhanArmada.pct];
+        dotTarget = mtd.kpi.dot.target;
+        pemenuhanTarget = mtd.kpi.pemenuhanArmada.target;
+      }
+    } catch(err) { console.error('Gagal ambil rincian week/mtd/ytd:', err); }
+  }
+
+  // fallback ke data contoh kalau API belum ada / gagal
+  if (!dotPct) {
+    dotPct = ['week','mtd','ytd'].map(r => RANGE_DATA[r].kpi.dot.pct);
+    costPct = ['week','mtd','ytd'].map(r => RANGE_DATA[r].kpi.cost.pct);
+    pemenuhanPct = ['week','mtd','ytd'].map(r => RANGE_DATA[r].kpi.pemenuhan.pct);
+  }
+
+  if (chartDotRincian) chartDotRincian.destroy();
+  if (chartCostRincian) chartCostRincian.destroy();
+  if (chartPemenuhanRincian) chartPemenuhanRincian.destroy();
+
+  const pctFormat = v => v.toFixed(1).replace('.',',') + '%';
+
+  chartDotRincian = new Chart(document.getElementById('chartDotRincian'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'DOT Achieve %', data:dotPct, backgroundColor:['#93A0B8','#2F6FE0','#0E9C88'], borderRadius:5, labelFormat:pctFormat, order:2},
+      {label:'Target ' + dotTarget + '%', data:[dotTarget,dotTarget,dotTarget], type:'line', borderColor:'#D14B3C', borderDash:[6,4], borderWidth:2, pointRadius:0, order:1}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:20}},
+      plugins:{legend:{labels:{color:'#5B6B85', font:{size:11}}}},
+      scales:{
+        x:{ticks:{color:'#5B6B85'}, grid:{color:'#E9EDF3'}},
+        y:{ticks:{color:'#93A0B8'}, grid:{color:'#E9EDF3'}, min:0, max:100}
+      }
+    },
+    plugins:[barValueLabelsPlugin]
+  });
+
+  chartCostRincian = new Chart(document.getElementById('chartCostRincian'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'% dari Budget', data:costPct, backgroundColor:['#93A0B8','#2F6FE0','#C97A16'], borderRadius:5, labelFormat:pctFormat, order:2},
+      {label:'Target 100% (sesuai budget)', data:[costTarget,costTarget,costTarget], type:'line', borderColor:'#D14B3C', borderDash:[6,4], borderWidth:2, pointRadius:0, order:1}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:20}},
+      plugins:{legend:{labels:{color:'#5B6B85', font:{size:11}}}},
+      scales:{
+        x:{ticks:{color:'#5B6B85'}, grid:{color:'#E9EDF3'}},
+        y:{ticks:{color:'#93A0B8'}, grid:{color:'#E9EDF3'}}
+      }
+    },
+    plugins:[barValueLabelsPlugin]
+  });
+
+  chartPemenuhanRincian = new Chart(document.getElementById('chartPemenuhanRincian'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'Pemenuhan Achieve %', data:pemenuhanPct, backgroundColor:['#93A0B8','#2F6FE0','#0E9C88'], borderRadius:5, labelFormat:pctFormat, order:2},
+      {label:'Target ' + pemenuhanTarget + '%', data:[pemenuhanTarget,pemenuhanTarget,pemenuhanTarget], type:'line', borderColor:'#D14B3C', borderDash:[6,4], borderWidth:2, pointRadius:0, order:1}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:20}},
+      plugins:{legend:{labels:{color:'#5B6B85', font:{size:11}}}},
+      scales:{
+        x:{ticks:{color:'#5B6B85'}, grid:{color:'#E9EDF3'}},
+        y:{ticks:{color:'#93A0B8'}, grid:{color:'#E9EDF3'}, min:0, max:100}
+      }
+    },
+    plugins:[barValueLabelsPlugin]
+  });
+}
+
 document.querySelectorAll('.range-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
@@ -918,10 +1055,12 @@ const NAMA_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Ag
   sel.addEventListener('change', ()=>{
     selectedMonth = sel.value;
     renderAll(currentRange);
+    renderRincianCharts();
   });
 })();
 
 renderAll('mtd');
+renderRincianCharts();
 </script>
 </body>
 </html>
