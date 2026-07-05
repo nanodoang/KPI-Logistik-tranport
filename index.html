@@ -255,27 +255,6 @@
         <div class="kpi-section-title">Delivery on Time (DOT) — <span class="val" id="dotHeadlineVal">–</span> Darat &amp; Laut</div>
       </div>
 
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-head">
-          <span class="panel-title" id="chartDotTitle">DOT — Perbandingan Hit vs Miss</span>
-          <span class="panel-note">jumlah pengiriman</span>
-        </div>
-        <div class="chart-wrap"><canvas id="chartDotHitMiss"></canvas></div>
-      </div>
-
-      <div class="table-panel">
-        <div class="panel-head" style="margin-top:4px;">
-          <span class="panel-title">Analisa Miss — Kenapa Telat</span>
-          <span class="panel-note">Detail penyebab per pengiriman yang tidak on-time</span>
-        </div>
-        <table>
-          <thead>
-            <tr><th>Tanggal</th><th>Ekspedisi</th><th>Tujuan</th><th>Kategori</th><th>Keterangan &amp; Analisa</th></tr>
-          </thead>
-          <tbody id="tblMiss"></tbody>
-        </table>
-      </div>
-
       <div class="issue-action-grid">
         <div class="issue-box">
           <div class="issue-action-label">⚠ Issue</div>
@@ -303,6 +282,27 @@
           </ul>
         </div>
       </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title" id="chartDotTitle">DOT — Perbandingan Hit vs Miss</span>
+          <span class="panel-note">jumlah pengiriman</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartDotHitMiss"></canvas></div>
+      </div>
+
+      <div class="table-panel">
+        <div class="panel-head" style="margin-top:4px;">
+          <span class="panel-title">Analisa Miss — Kenapa Telat</span>
+          <span class="panel-note">Detail penyebab per pengiriman yang tidak on-time</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>Ekspedisi</th><th>Tujuan</th><th>Kategori</th><th>Keterangan &amp; Analisa</th></tr>
+          </thead>
+          <tbody id="tblMiss"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== KPI 2 — TRANSPORT COST / M3 ===== -->
@@ -310,14 +310,6 @@
       <div class="kpi-section-head">
         <div class="kpi-section-num">2</div>
         <div class="kpi-section-title">Delivery Transport Cost/M3 — target <span class="val">Rp185.029</span> blended (Darat Rp154.299, Laut Rp339.336)</div>
-      </div>
-
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-head">
-          <span class="panel-title" id="chartCostTitle">Cost vs Budget</span>
-          <span class="panel-note">Rp juta</span>
-        </div>
-        <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
       </div>
 
       <div class="issue-action-grid">
@@ -340,6 +332,14 @@
           </ul>
         </div>
       </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title" id="chartCostTitle">Cost vs Budget</span>
+          <span class="panel-note">Rp juta</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+      </div>
     </div>
 
     <!-- ===== KPI 3 — PEMENUHAN ARMADA ===== -->
@@ -347,27 +347,6 @@
       <div class="kpi-section-head">
         <div class="kpi-section-num">3</div>
         <div class="kpi-section-title">Pemenuhan Armada vs Daily Delivery Plan — <span class="val" id="pemenuhanHeadlineVal">–</span></div>
-      </div>
-
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-head">
-          <span class="panel-title" id="chartPemenuhanTitle">Pemenuhan Armada</span>
-          <span class="panel-note">%</span>
-        </div>
-        <div class="chart-wrap"><canvas id="chartPemenuhan"></canvas></div>
-      </div>
-
-      <div class="table-panel">
-        <div class="panel-head" style="margin-top:4px;">
-          <span class="panel-title">Detail per Ekspedisi</span>
-          <span class="panel-note" id="tblEkspedisiNote">MTD</span>
-        </div>
-        <table>
-          <thead>
-            <tr><th>Ekspedisi</th><th>Order Masuk</th><th>Terpenuhi</th><th>DOT</th><th>Cost (Rp)</th><th>Status</th></tr>
-          </thead>
-          <tbody id="tblEkspedisi"></tbody>
-        </table>
       </div>
 
       <div class="issue-action-grid">
@@ -396,6 +375,27 @@
             <li>Alternatif ke ekspedisi lain untuk mendapatkan space</li>
           </ul>
         </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <span class="panel-title" id="chartPemenuhanTitle">Pemenuhan Armada</span>
+          <span class="panel-note">%</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartPemenuhan"></canvas></div>
+      </div>
+
+      <div class="table-panel">
+        <div class="panel-head" style="margin-top:4px;">
+          <span class="panel-title">Detail per Ekspedisi</span>
+          <span class="panel-note" id="tblEkspedisiNote">MTD</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Ekspedisi</th><th>Order Masuk</th><th>Terpenuhi</th><th>DOT</th><th>Cost (Rp)</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tblEkspedisi"></tbody>
+        </table>
       </div>
     </div>
 
