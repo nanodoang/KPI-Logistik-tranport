@@ -257,29 +257,12 @@
 
       <div class="issue-action-grid">
         <div class="issue-box">
-          <div class="issue-action-label">⚠ Issue</div>
-          <div class="sub-label">Darat</div>
-          <ul>
-            <li>Mobil trouble</li>
-            <li>Antri di pelabuhan (antri tiket kapal penyeberangan Banyuwangi–Lombok)</li>
-            <li>Susah solar</li>
-          </ul>
-          <div class="sub-label">Laut</div>
-          <ul>
-            <li>Delay kapal / Next kapal / Pickup lebih cepat dari rencana</li>
-          </ul>
+          <div class="issue-action-label">⚠ Issue (otomatis dari data — diurutkan dari paling sering)</div>
+          <div id="dotIssueList"><ul><li>Memuat analisa...</li></ul></div>
         </div>
         <div class="action-box">
-          <div class="issue-action-label">✓ Action Plan</div>
-          <div class="sub-label">Darat</div>
-          <ul>
-            <li>Analisa mobil trouble (cek data mobil per nopol/ekspedisi)</li>
-            <li>Alternatif menggunakan layanan booking tiket langsung ke ASDP</li>
-          </ul>
-          <div class="sub-label">Laut</div>
-          <ul>
-            <li>Review lead time semua pengiriman laut/container</li>
-          </ul>
+          <div class="issue-action-label">✓ Action Plan (saran otomatis per kategori)</div>
+          <div id="dotActionList"><ul><li>Memuat analisa...</li></ul></div>
         </div>
       </div>
 
@@ -779,6 +762,12 @@ function renderTables(range){
       </td>
     </tr>`;
   }).join('');
+
+  // fallback text (data contoh) — bukan analisa otomatis karena belum tersambung API
+  const issueListEl = document.getElementById('dotIssueList');
+  const actionListEl = document.getElementById('dotActionList');
+  if (issueListEl) issueListEl.innerHTML = '<ul><li>(Data contoh — sambungkan API untuk analisa otomatis dari data asli)</li></ul>';
+  if (actionListEl) actionListEl.innerHTML = '<ul><li>(Data contoh — saran otomatis muncul begitu API tersambung)</li></ul>';
 }
 
 let chartCost, chartDotHitMiss, chartPemenuhan;
@@ -886,6 +875,35 @@ async function renderAll(range){
         <td><div class="miss-reason">${m.keterangan || '-'}</div></td>
       </tr>`;
     }).join('');
+
+    // ---- Issue & Action Plan otomatis (bukan teks statis) ----
+    const issueListEl = document.getElementById('dotIssueList');
+    const actionListEl = document.getElementById('dotActionList');
+    if (apiData.issueActionSummary && apiData.issueActionSummary.length > 0) {
+      const byMode = { Darat: [], Laut: [] };
+      apiData.issueActionSummary.forEach(it => {
+        (byMode[it.mode] || byMode.Darat).push(it);
+      });
+      function renderModeGroup(items, isAction){
+        if (items.length === 0) return '';
+        return items.map(it => isAction
+          ? `<li>${it.kategori}: ${it.actionSuggestion}</li>`
+          : `<li>${it.kategori} <span style="color:var(--ink-faint)">(${it.count}x)</span></li>`
+        ).join('');
+      }
+      let issueHtml = '';
+      let actionHtml = '';
+      ['Darat','Laut'].forEach(mode => {
+        if (byMode[mode].length === 0) return;
+        issueHtml += `<div class="sub-label">${mode}</div><ul>${renderModeGroup(byMode[mode], false)}</ul>`;
+        actionHtml += `<div class="sub-label">${mode}</div><ul>${renderModeGroup(byMode[mode], true)}</ul>`;
+      });
+      issueListEl.innerHTML = issueHtml || '<ul><li>Tidak ada miss pada periode ini 🎉</li></ul>';
+      actionListEl.innerHTML = actionHtml || '<ul><li>Tidak ada tindakan diperlukan pada periode ini.</li></ul>';
+    } else {
+      issueListEl.innerHTML = '<ul><li>Tidak ada miss pada periode ini 🎉</li></ul>';
+      actionListEl.innerHTML = '<ul><li>Tidak ada tindakan diperlukan pada periode ini.</li></ul>';
+    }
 
     // Chart pakai ringkasan hit/miss dari API (satu titik saja, karena API belum breakdown per hari/minggu)
     renderChartsFromApi(apiData, range);
